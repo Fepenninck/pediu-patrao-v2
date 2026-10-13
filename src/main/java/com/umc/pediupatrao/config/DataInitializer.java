@@ -1,5 +1,6 @@
 package com.umc.pediupatrao.config;
 
+import com.umc.pediupatrao.entity.Perfil;
 import com.umc.pediupatrao.entity.Usuario;
 import com.umc.pediupatrao.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -13,19 +14,32 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initDatabase(UsuarioRepository repo) {
         return args -> {
+            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-            if (repo.findByUsername("admin").isEmpty()) {
-
-                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
-                Usuario user = new Usuario();
-                user.setUsername("admin");
-                user.setPassword(encoder.encode("teste123"));
-
-                repo.save(user);
-
-                System.out.println("Usuário admin criado!");
-            }
+            criarUsuarioSeNaoExistir(repo, encoder, "admin", "teste123", Perfil.ADMIN);
+            criarUsuarioSeNaoExistir(repo, encoder, "gerente", "teste123", Perfil.GERENTE);
+            criarUsuarioSeNaoExistir(repo, encoder, "atendente", "teste123", Perfil.ATENDENTE);
         };
+    }
+
+    private void criarUsuarioSeNaoExistir(
+            UsuarioRepository repo,
+            BCryptPasswordEncoder encoder,
+            String username,
+            String senha,
+            Perfil perfil) {
+
+        repo.findByUsername(username).ifPresentOrElse(usuario -> {
+            if (usuario.getRole() == null) {
+                usuario.setRole(perfil);
+                repo.save(usuario);
+            }
+        }, () -> {
+            Usuario usuario = new Usuario();
+            usuario.setUsername(username);
+            usuario.setPassword(encoder.encode(senha));
+            usuario.setRole(perfil);
+            repo.save(usuario);
+        });
     }
 }

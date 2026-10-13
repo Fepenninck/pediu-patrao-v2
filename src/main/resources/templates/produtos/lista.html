@@ -25,6 +25,7 @@
             <div class="collapse" id="formularioProduto">
                 <div class="card card-body">
                     <form th:action="@{/api/produtos}" method="post" id="produtoForm">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <div class="mb-3">
                             <label for="nome" class="form-label">Nome do Produto</label>
                             <input type="text" id="nome" name="nome" class="form-control" placeholder="Nome do Produto" required>

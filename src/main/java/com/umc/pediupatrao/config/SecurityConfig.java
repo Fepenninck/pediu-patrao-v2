@@ -3,6 +3,7 @@ package com.umc.pediupatrao.config;
 import com.umc.pediupatrao.service.UsuarioDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -12,7 +13,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
 @Configuration
 @EnableWebSecurity
@@ -31,30 +31,76 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(usuarioDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder());
-        return authProvider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(usuarioDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration configuration) throws Exception {
+        return configuration.getAuthenticationManager();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Desativa CSRF para REST APIs
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/dist/**", "/plugins/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/api/usuarios").permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/login",
+                                "/css/**",
+                                "/dist/**",
+                                "/plugins/**",
+                                "/js/**",
+                                "/images/**"
+                        ).permitAll()
+
+                        // Usuários: somente ADMIN
+                        .requestMatchers("/api/usuarios/**", "/usuarios/**")
+                        .hasRole("ADMIN")
+
+                        // Clientes: gerente consulta; atendente consulta, cadastra e altera
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/clientes/**",
+                                "/clientes",
+                                "/clientes/editar/**")
+                        .hasAnyRole("GERENTE", "ATENDENTE")
+
+                        .requestMatchers(
+                                "/api/clientes/**",
+                                "/clientes/salvar",
+                                "/clientes/editar/**")
+                        .hasRole("ATENDENTE")
+
+                        // Produtos: todos logados consultam; somente ADMIN altera
+                        .requestMatchers(HttpMethod.GET, "/api/produtos/**", "/produtos")
+                        .authenticated()
+
+                        .requestMatchers("/api/produtos/**")
+                        .hasRole("ADMIN")
+
+                        // Pedidos: atendente registra; gerente atualiza status
+                        .requestMatchers(HttpMethod.POST, "/api/pedidos")
+                        .hasRole("ATENDENTE")
+
+                        .requestMatchers(HttpMethod.PUT, "/api/pedidos/**")
+                        .hasRole("GERENTE")
+
+                        .requestMatchers(HttpMethod.GET, "/api/pedidos/**", "/pedidos")
+                        .authenticated()
+
+                        // Rotas administrativas
+                        .requestMatchers("/admin", "/configuracoes", "/teste")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers("/").authenticated()
+                        .anyRequest().denyAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
+                        .defaultSuccessUrl("/", true)
                         .permitAll()
-                        .successHandler(authenticationSuccessHandler())
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
@@ -63,12 +109,5 @@ public class SecurityConfig {
                 );
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler authenticationSuccessHandler() {
-        return (request, response, authentication) -> {
-            response.sendRedirect("/"); // Redireciona para a página inicial após login bem-sucedido
-        };
     }
 }
