@@ -73,29 +73,28 @@ public class SecurityConfig {
                                 "/clientes/editar/**")
                         .hasRole("ATENDENTE")
 
-                        // Produtos: todos logados consultam; somente ADMIN altera
-                        .requestMatchers(HttpMethod.GET, "/api/produtos/**", "/produtos")
-                        .authenticated()
+.requestMatchers(HttpMethod.GET, "/api/auditorias/**")
+.hasAnyRole("ADMIN", "GERENTE")
 
-                        .requestMatchers("/api/produtos/**")
-                        .hasRole("ADMIN")
+.requestMatchers(HttpMethod.POST, "/api/pedidos")
+.hasRole("ATENDENTE")
 
-                        // Pedidos: atendente registra; gerente atualiza status
-                        .requestMatchers(HttpMethod.POST, "/api/pedidos")
-                        .hasRole("ATENDENTE")
+.requestMatchers(HttpMethod.PUT,
+        "/api/pedidos/*/desconto",
+        "/api/pedidos/*/cancelar")
+.hasRole("GERENTE")
 
-                        .requestMatchers(HttpMethod.PUT, "/api/pedidos/**")
-                        .hasRole("GERENTE")
 
-                        .requestMatchers(HttpMethod.GET, "/api/pedidos/**", "/pedidos")
-                        .authenticated()
+.requestMatchers(HttpMethod.PUT, "/api/pedidos/*/status")
+.hasAnyRole("ATENDENTE", "GERENTE")
 
-                        // Rotas administrativas
-                        .requestMatchers("/admin", "/configuracoes", "/teste")
-                        .hasRole("ADMIN")
 
-                        .requestMatchers("/").authenticated()
-                        .anyRequest().denyAll()
+.requestMatchers(HttpMethod.GET, "/api/pedidos/**", "/pedidos")
+.authenticated()
+
+
+.requestMatchers("/api/auditorias/**", "/api/pedidos/**")
+.denyAll()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")

@@ -2,10 +2,9 @@ package com.umc.pediupatrao.service;
 
 import com.umc.pediupatrao.entity.Usuario;
 import com.umc.pediupatrao.repository.UsuarioRepository;
+import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class UsuarioService {
@@ -13,49 +12,88 @@ public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Busca um usuário por ID
     public Optional<Usuario> buscarPorId(String id) {
         return usuarioRepository.findById(id);
     }
 
-    // Busca um usuário por username
     public Optional<Usuario> buscarPorUsername(String username) {
         return usuarioRepository.findByUsername(username);
     }
 
-    // Salva um novo usuário (criptografando a senha)
-    public void salvarUsuario(Usuario usuario) {
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword())); // Criptografa a senha
-        usuarioRepository.save(usuario);
-    }
-
-    // Deleta um usuário pelo ID
-    public void deletarUsuario(String id) {
-        usuarioRepository.deleteById(id);
-    }
-
-    // Lista todos os usuários
     public Iterable<Usuario> listarTodos() {
         return usuarioRepository.findAll();
     }
 
-    // Atualiza o usuário usuários
-    public void atualizarUsuario(String id, Usuario usuarioAtualizado) {
-        usuarioRepository.findById(id).ifPresent(usuarioExistente -> {
-            usuarioExistente.setUsername(usuarioAtualizado.getUsername());
-            usuarioExistente.setRole(usuarioAtualizado.getRole());
+    public Usuario criarUsuario(Usuario usuario) {
+        if (usuario.getUsername() == null || usuario.getUsername().isBlank()) {
+            throw new IllegalArgumentException("O nome de usuário é obrigatório.");
+        }
 
-            // Só atualiza a senha se uma nova foi informada
-            if (usuarioAtualizado.getPassword() != null && !usuarioAtualizado.getPassword().isBlank()) {
-                usuarioExistente.setPassword(passwordEncoder.encode(usuarioAtualizado.getPassword()));
-            }
+        if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
+            throw new IllegalArgumentException("A senha é obrigatória.");
+        }
 
-            usuarioRepository.save(usuarioExistente);
-        });
+        if (usuario.getRole() == null) {
+            throw new IllegalArgumentException("O perfil de acesso é obrigatório.");
+        }
+
+        if (usuarioRepository.findByUsername(usuario.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Já existe um usuário com esse nome.");
+        }
+
+        usuario.setUsername(usuario.getUsername().trim());
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+
+        return usuarioRepository.save(usuario);
+    }
+
+    public Usuario atualizarUsuario(String id, Usuario usuarioAtualizado) {
+        Usuario usuarioExistente = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        if (usuarioAtualizado.getUsername() == null
+                || usuarioAtualizado.getUsername().isBlank()) {
+            throw new IllegalArgumentException("O nome de usuário é obrigatório.");
+        }
+
+        if (usuarioAtualizado.getRole() == null) {
+            throw new IllegalArgumentException("O perfil de acesso é obrigatório.");
+        }
+
+        String novoUsername = usuarioAtualizado.getUsername().trim();
+
+        usuarioRepository.findByUsername(novoUsername)
+                .filter(usuarioComMesmoNome -> !usuarioComMesmoNome.getId().equals(id))
+                .ifPresent(usuario -> {
+                    throw new IllegalArgumentException(
+                            "Já existe um usuário com esse nome."
+                    );
+                });
+
+        usuarioExistente.setUsername(novoUsername);
+        usuarioExistente.setRole(usuarioAtualizado.getRole());
+
+        if (usuarioAtualizado.getPassword() != null
+                && !usuarioAtualizado.getPassword().isBlank()) {
+            usuarioExistente.setPassword(
+                    passwordEncoder.encode(usuarioAtualizado.getPassword())
+            );
+        }
+
+        return usuarioRepository.save(usuarioExistente);
+    }
+
+    public void deletarUsuario(String id) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+
+        usuarioRepository.delete(usuario);
     }
 }

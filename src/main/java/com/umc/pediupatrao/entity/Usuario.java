@@ -2,6 +2,7 @@ package com.umc.pediupatrao.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Document(collection = "usuarios") // Define a coleção no MongoDB
 public class Usuario {
@@ -26,6 +27,9 @@ public class Usuario {
     public void setUsername(String username) {
         this.username = username;
     }
+
+@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+private String password;
 
     public String getPassword() {
         return password;

@@ -52,4 +52,9 @@ public class AuditoriaService {
 
         auditoriaRepository.save(auditoria);
     }
+
+    public List<Auditoria> listarAuditorias() {
+    return auditoriaRepository.findAll();
+}
+
 }
