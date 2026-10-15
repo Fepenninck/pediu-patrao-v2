@@ -242,8 +242,9 @@ public Pedido aplicarDesconto(String id, BigDecimal percentual) {
         );
     }
 
-    BigDecimal percentualAnterior = pedido.getPercentualDesconto();
-    BigDecimal totalAnterior = pedido.getValorTotal();
+   BigDecimal percentualAnterior = pedido.getPercentualDesconto();
+   BigDecimal valorDescontoAnterior = pedido.getValorDesconto();
+BigDecimal totalAnterior = pedido.getValorTotal();
 
     BigDecimal valorDesconto = pedido.getSubtotal()
             .multiply(percentual)
@@ -259,15 +260,29 @@ public Pedido aplicarDesconto(String id, BigDecimal percentual) {
 
     Pedido pedidoAtualizado = pedidoRepository.save(pedido);
 
-    auditoriaService.registrar(
-            "DESCONTO",
-            "PEDIDO",
-            pedidoAtualizado.getId(),
-            "desconto e valorTotal",
-            "Percentual: " + percentualAnterior + "% | Total: R$ " + totalAnterior,
-            "Percentual: " + percentual + "% | Total: R$ " + valorTotal,
-            null
-    );
+    auditarCampo(
+        "DESCONTO",
+        pedidoAtualizado.getId(),
+        "percentualDesconto",
+        percentualAnterior,
+        pedidoAtualizado.getPercentualDesconto()
+);
+
+auditarCampo(
+        "DESCONTO",
+        pedidoAtualizado.getId(),
+        "valorDesconto",
+        valorDescontoAnterior,
+        pedidoAtualizado.getValorDesconto()
+);
+
+auditarCampo(
+        "DESCONTO",
+        pedidoAtualizado.getId(),
+        "valorTotal",
+        totalAnterior,
+        pedidoAtualizado.getValorTotal()
+);
 
     return pedidoAtualizado;
 }

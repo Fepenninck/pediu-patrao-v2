@@ -106,10 +106,11 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             ).hasRole("GERENTE")
 
             // Avanço do pedido: GERENTE e ATENDENTE.
-            .requestMatchers(
-                HttpMethod.PUT,
-                "/api/pedidos/*/status"
-            ).hasAnyRole("GERENTE", "ATENDENTE")
+            // Gerenciamento do fluxo do pedido: somente GERENTE.
+.requestMatchers(
+    HttpMethod.PUT,
+    "/api/pedidos/*/status"
+).hasRole("GERENTE")
 
             // Consulta de pedidos: os três perfis.
             .requestMatchers(

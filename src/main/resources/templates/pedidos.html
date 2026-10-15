@@ -270,7 +270,7 @@
                     const acoes = criarElemento('td');
                     const id = encodeURIComponent(pedido.id);
 
-                    if (['GERENTE', 'ATENDENTE'].includes(perfil)) {
+                    if (perfil === 'GERENTE') {
                         for (const proximo of transicoes[pedido.status] || []) {
                             acoes.appendChild(criarBotao(
                                 nomesStatus[proximo],
