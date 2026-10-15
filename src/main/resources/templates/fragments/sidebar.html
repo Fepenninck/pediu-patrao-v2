@@ -7,18 +7,22 @@
     <body>
         <div th:fragment="sidebar">
             <div id="sidebar">
-                <h4 class="text-center py-3">Pediu Patrão</h4>
+                <div class="sidebar-header">
+                    <h4 class="sidebar-brand mb-0">Pediu Patrão</h4>
+                    <button type="button" id="recolherMenu" class="sidebar-toggle" aria-label="Recolher menu" aria-expanded="true" aria-controls="sidebar">
+                        <i class="bi bi-chevron-left" aria-hidden="true"></i>
+                    </button>
+                </div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/}" aria-current="page">
                             <i class="bi bi-house"></i><span class="d-none d-md-inline">&nbsp;Home</span>
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item"
+                        th:if="${perfilAtual == 'GERENTE' or perfilAtual == 'ATENDENTE'}">
                         <a class="nav-link" th:href="@{/clientes}">
                             <i class="bi bi-person-raised-hand"></i><span class="d-none d-md-inline">&nbsp;Clientes</span>
-                            <li class="nav-item"
-    th:if="${perfilAtual == 'GERENTE' or perfilAtual == 'ATENDENTE'}">
                         </a>
                     </li>
                     <li class="nav-item">
@@ -40,19 +44,25 @@
                         </a>
                         <ul class="nav flex-column submenu">
                             <li class="nav-item">
-                                <a class="nav-link" th:href="@{/funcionarios}">
-                                    <i class="bi bi-person-walking"></i><span class="d-none d-md-inline">&nbsp;Funcionários</span>
-                                </a>
+                                <span class="nav-link disabled text-white-50" aria-disabled="true">
+                                    <i class="bi bi-person-walking"></i>
+                                    <span class="d-none d-md-inline">&nbsp;Funcionários</span>
+                                    <small class="d-block">Em breve</small>
+                                </span>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" th:href="@{/entregadores}">
-                                    <i class="bi bi-bicycle"></i><span class="d-none d-md-inline">&nbsp;Entregadores</span>
-                                </a>
+                                <span class="nav-link disabled text-white-50" aria-disabled="true">
+                                    <i class="bi bi-bicycle"></i>
+                                    <span class="d-none d-md-inline">&nbsp;Entregadores</span>
+                                    <small class="d-block">Em breve</small>
+                                </span>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" th:href="@{/horarios}">
-                                    <i class="bi bi-clock"></i><span class="d-none d-md-inline">&nbsp;Horário de Funcionamento</span>
-                                </a>
+                                <span class="nav-link disabled text-white-50" aria-disabled="true">
+                                    <i class="bi bi-clock"></i>
+                                    <span class="d-none d-md-inline">&nbsp;Horário de Funcionamento</span>
+                                    <small class="d-block">Em breve</small>
+                                </span>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" th:href="@{/produtos}">
@@ -64,10 +74,16 @@
                                     <i class="bi bi-people-fill"></i><span class="d-none d-md-inline">&nbsp;Usuários</span>
                                 </a>
                             </li>
+                        </ul>
                     </li>
                 </ul>
-                </li>
-                </ul>
+                <form th:action="@{/logout}" method="post" class="sidebar-logout">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                    <button type="submit" class="nav-link" title="Sair">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                        <span>Sair</span>
+                    </button>
+                </form>
             </div>
         </div>
     </body>
