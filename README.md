@@ -156,19 +156,3 @@ src/main/
 ```
 
 Os itens Funcionários, Entregadores e Horário de Funcionamento estão identificados como “Em breve”; não fazem parte das funcionalidades implementadas nesta atividade.
-
-## Verificação e demonstração
-
-Roteiro para os testes manuais e o vídeo individual:
-
-1. Autenticar com os três perfis e demonstrar as opções disponíveis para cada um.
-2. Como ADMIN, administrar usuários e demonstrar o bloqueio de desconto e cancelamento.
-3. Como ATENDENTE, cadastrar cliente e registrar pedido; conferir itens, total e entrada.
-4. Como GERENTE, aplicar desconto e conferir os valores anteriores e novos na auditoria.
-5. Avançar pedidos pelo fluxo de entrega e pelo fluxo de retirada, conferindo horário e responsável pela saída.
-6. Tentar pular etapas, aplicar desconto acima de 20% e descontar ou cancelar após a saída.
-7. Cancelar outro pedido com justificativa e demonstrar o bloqueio de alterações posteriores.
-8. Como ATENDENTE, alterar telefone e endereço de cliente e consultar o histórico como GERENTE ou ADMIN.
-9. Tentar acessar APIs com perfis sem autorização e demonstrar o bloqueio no backend. Nas operações de escrita, usar sessão e CSRF válidos para comprovar o bloqueio por perfil.
-
-O vídeo deve mostrar a execução e os registros de auditoria correspondentes. Este roteiro descreve a validação manual; o projeto não contém suíte de testes automatizados.
