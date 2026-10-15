@@ -1,7 +1,6 @@
 <div align="center">
   <img src="./assets/banner.png" alt="Banner Pediu Patrão" width="100%">
 
-  <h1>Pediu Patrão</h1>
 
   <p>
     Sistema web de gerenciamento de pizzarias com controle de acesso,
