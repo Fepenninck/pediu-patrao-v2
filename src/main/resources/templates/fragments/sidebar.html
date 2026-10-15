@@ -17,6 +17,8 @@
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/clientes}">
                             <i class="bi bi-person-raised-hand"></i><span class="d-none d-md-inline">&nbsp;Clientes</span>
+                            <li class="nav-item"
+    th:if="${perfilAtual == 'GERENTE' or perfilAtual == 'ATENDENTE'}">
                         </a>
                     </li>
                     <li class="nav-item">
@@ -24,6 +26,13 @@
                             <i class="bi bi-bag"></i><span class="d-none d-md-inline">&nbsp;Pedidos</span>
                         </a>
                     </li>
+                    <li class="nav-item"
+    th:if="${perfilAtual == 'ADMIN' or perfilAtual == 'GERENTE'}">
+    <a class="nav-link" th:href="@{/auditorias}">
+        <i class="bi bi-clock-history"></i>
+        <span class="d-none d-md-inline">&nbsp;Auditoria</span>
+    </a>
+</li>
                     <li class="nav-item">
                         <a class="nav-link" href="#" onclick="toggleSubmenu(event, this)">
                             <i class="bi bi-gear"></i><span class="d-none d-md-inline">&nbsp;Configurações</span>

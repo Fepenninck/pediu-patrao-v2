@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import java.util.Objects;
 
 @Service
 public class PedidoService {
@@ -35,7 +36,28 @@ public class PedidoService {
         this.clienteRepository = clienteRepository;
         this.produtoRepository = produtoRepository;
         this.auditoriaService = auditoriaService;
+
     }
+
+    private void auditarCampo(
+        String operacao,
+        String pedidoId,
+        String campo,
+        Object anterior,
+        Object novo) {
+
+    if (!Objects.equals(anterior, novo)) {
+        auditoriaService.registrar(
+                operacao,
+                "PEDIDO",
+                pedidoId,
+                campo,
+                anterior == null ? null : anterior.toString(),
+                novo == null ? null : novo.toString(),
+                null
+        );
+    }
+}
 
     public Pedido criarPedido(CriarPedidoRequest request) {
         if (request.getClienteId() == null || request.getClienteId().isBlank()) {
@@ -105,15 +127,25 @@ public class PedidoService {
 
         Pedido pedidoSalvo = pedidoRepository.save(pedido);
 
-        auditoriaService.registrar(
-                "CRIACAO",
-                "PEDIDO",
-                pedidoSalvo.getId(),
-                "pedido",
-                null,
-                "Pedido criado com valor total de R$ " + pedidoSalvo.getValorTotal(),
-                null
-        );
+        auditarCampo("CRIACAO", pedidoSalvo.getId(), "clienteId", null, pedidoSalvo.getClienteId());
+        auditarCampo("CRIACAO", pedidoSalvo.getId(), "status", null, pedidoSalvo.getStatus());
+        auditarCampo("CRIACAO", pedidoSalvo.getId(), "subtotal", null, pedidoSalvo.getSubtotal());
+        auditarCampo("CRIACAO", pedidoSalvo.getId(), "percentualDesconto", null, pedidoSalvo.getPercentualDesconto());
+        auditarCampo("CRIACAO", pedidoSalvo.getId(), "valorDesconto", null, pedidoSalvo.getValorDesconto());
+        auditarCampo("CRIACAO", pedidoSalvo.getId(), "valorTotal", null, pedidoSalvo.getValorTotal());
+        auditarCampo("CRIACAO", pedidoSalvo.getId(), "responsavelEntrada", null, pedidoSalvo.getResponsavelEntrada());
+        auditarCampo("CRIACAO", pedidoSalvo.getId(), "dataHoraEntrada", null, pedidoSalvo.getDataHoraEntrada());
+
+        for (int i = 0; i < pedidoSalvo.getItens().size(); i++) {
+            ItemPedido item = pedidoSalvo.getItens().get(i);
+            String campo = "itens[" + i + "].";
+
+            auditarCampo("CRIACAO", pedidoSalvo.getId(), campo + "produtoId", null, item.getProdutoId());
+            auditarCampo("CRIACAO", pedidoSalvo.getId(), campo + "nomeProduto", null, item.getNomeProduto());
+            auditarCampo("CRIACAO", pedidoSalvo.getId(), campo + "quantidade", null, item.getQuantidade());
+            auditarCampo("CRIACAO", pedidoSalvo.getId(), campo + "precoUnitario", null, item.getPrecoUnitario());
+            auditarCampo("CRIACAO", pedidoSalvo.getId(), campo + "subtotal", null, item.getSubtotal());
+        }
 
         return pedidoSalvo;
     }
@@ -131,6 +163,8 @@ public class PedidoService {
             .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado."));
 
     StatusPedido statusAtual = pedido.getStatus();
+    LocalDateTime dataHoraSaidaAnterior = pedido.getDataHoraSaida();
+    String responsavelSaidaAnterior = pedido.getResponsavelSaida();
 
     if (statusAtual == StatusPedido.CANCELADO) {
         throw new IllegalStateException(
@@ -173,6 +207,15 @@ public class PedidoService {
             statusAtual.name(),
             novoStatus.name(),
             null
+    );
+
+    auditarCampo(
+            "SAIDA", pedidoAtualizado.getId(), "dataHoraSaida",
+            dataHoraSaidaAnterior, pedidoAtualizado.getDataHoraSaida()
+    );
+    auditarCampo(
+            "SAIDA", pedidoAtualizado.getId(), "responsavelSaida",
+            responsavelSaidaAnterior, pedidoAtualizado.getResponsavelSaida()
     );
 
     return pedidoAtualizado;

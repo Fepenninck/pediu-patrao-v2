@@ -9,8 +9,9 @@ public class Usuario {
     @Id
     private String id;
     private String username; // Nome de usuário para login
-    private String password; // Senha criptografada
-    private Perfil role;     // Papel do usuário, como ADMIN ou USER
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+    private Perfil role;     // Perfil de acesso do usuário
 
     public String getId() {
         return id;
@@ -28,9 +29,6 @@ public class Usuario {
         this.username = username;
     }
 
-@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-private String password;
-
     public String getPassword() {
         return password;
     }
@@ -40,12 +38,12 @@ private String password;
     }
 
     public Perfil getRole() {
-    return role;
-}
+        return role;
+    }
 
-public void setRole(Perfil role) {
-    this.role = role;
-}
+    public void setRole(Perfil role) {
+        this.role = role;
+    }
     
     
 }

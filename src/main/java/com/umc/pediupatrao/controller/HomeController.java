@@ -23,6 +23,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class HomeController {
 
+    @GetMapping("/auditorias")
+public String auditorias(Model model) {
+    model.addAttribute("content", "auditorias :: content");
+    return "layout";
+}
+
     private static final Logger log = LoggerFactory.getLogger(HomeController.class);
 
     @Autowired
@@ -40,6 +46,7 @@ public class HomeController {
     @GetMapping("/login")
     public String login() {
         return "login";
+        
     }
 
     @GetMapping("/")

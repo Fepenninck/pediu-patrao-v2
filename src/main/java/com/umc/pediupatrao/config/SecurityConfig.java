@@ -43,70 +43,121 @@ public class SecurityConfig {
         return configuration.getAuthenticationManager();
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/login",
-                                "/css/**",
-                                "/dist/**",
-                                "/plugins/**",
-                                "/js/**",
-                                "/images/**"
-                        ).permitAll()
+   @Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+        .authorizeHttpRequests(auth -> auth
 
-                        // Usuários: somente ADMIN
-                        .requestMatchers("/api/usuarios/**", "/usuarios/**")
-                        .hasRole("ADMIN")
+            // Página de login e arquivos públicos.
+            .requestMatchers(
+                "/login",
+                "/css/**",
+                "/dist/**",
+                "/plugins/**",
+                "/js/**",
+                "/images/**"
+            ).permitAll()
 
-                        // Clientes: gerente consulta; atendente consulta, cadastra e altera
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/clientes/**",
-                                "/clientes",
-                                "/clientes/editar/**")
-                        .hasAnyRole("GERENTE", "ATENDENTE")
+            // Administração de usuários: somente ADMIN.
+            .requestMatchers(
+                "/usuarios",
+                "/usuarios/**",
+                "/api/usuarios",
+                "/api/usuarios/**",
+                "/admin"
+            ).hasRole("ADMIN")
 
-                        .requestMatchers(
-                                "/api/clientes/**",
-                                "/clientes/salvar",
-                                "/clientes/editar/**")
-                        .hasRole("ATENDENTE")
+            // Consulta de auditoria: ADMIN e GERENTE.
+            .requestMatchers(
+                HttpMethod.GET,
+                "/auditorias",
+                "/api/auditorias",
+                "/api/auditorias/**"
+            ).hasAnyRole("ADMIN", "GERENTE")
 
-.requestMatchers(HttpMethod.GET, "/api/auditorias/**")
-.hasAnyRole("ADMIN", "GERENTE")
+            // Consulta de clientes: GERENTE e ATENDENTE.
+            .requestMatchers(
+                HttpMethod.GET,
+                "/clientes",
+                "/api/clientes",
+                "/api/clientes/**"
+            ).hasAnyRole("GERENTE", "ATENDENTE")
 
-.requestMatchers(HttpMethod.POST, "/api/pedidos")
-.hasRole("ATENDENTE")
+            // Cadastro, edição e exclusão de clientes: ATENDENTE.
+            .requestMatchers(
+                "/clientes/novo",
+                "/clientes/salvar",
+                "/clientes/editar/**",
+                "/api/clientes",
+                "/api/clientes/**"
+            ).hasRole("ATENDENTE")
 
-.requestMatchers(HttpMethod.PUT,
-        "/api/pedidos/*/desconto",
-        "/api/pedidos/*/cancelar")
-.hasRole("GERENTE")
+            // Registro de pedidos: ATENDENTE.
+            .requestMatchers(
+                HttpMethod.POST,
+                "/api/pedidos"
+            ).hasRole("ATENDENTE")
 
+            // Desconto e cancelamento: exclusivamente GERENTE.
+            .requestMatchers(
+                HttpMethod.PUT,
+                "/api/pedidos/*/desconto",
+                "/api/pedidos/*/cancelar"
+            ).hasRole("GERENTE")
 
-.requestMatchers(HttpMethod.PUT, "/api/pedidos/*/status")
-.hasAnyRole("ATENDENTE", "GERENTE")
+            // Avanço do pedido: GERENTE e ATENDENTE.
+            .requestMatchers(
+                HttpMethod.PUT,
+                "/api/pedidos/*/status"
+            ).hasAnyRole("GERENTE", "ATENDENTE")
 
+            // Consulta de pedidos: os três perfis.
+            .requestMatchers(
+                HttpMethod.GET,
+                "/pedidos",
+                "/api/pedidos",
+                "/api/pedidos/**"
+            ).hasAnyRole("ADMIN", "GERENTE", "ATENDENTE")
 
-.requestMatchers(HttpMethod.GET, "/api/pedidos/**", "/pedidos")
-.authenticated()
+            // Consulta de produtos: os três perfis.
+            .requestMatchers(
+                HttpMethod.GET,
+                "/produtos",
+                "/api/produtos",
+                "/api/produtos/**"
+            ).hasAnyRole("ADMIN", "GERENTE", "ATENDENTE")
 
+            // Manutenção de produtos: ADMIN e GERENTE.
+            .requestMatchers(
+                "/api/produtos",
+                "/api/produtos/**"
+            ).hasAnyRole("ADMIN", "GERENTE")
 
-.requestMatchers("/api/auditorias/**", "/api/pedidos/**")
-.denyAll()
-                )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .permitAll()
-                );
+            // Bloqueia operações não previstas nessas APIs.
+            .requestMatchers(
+                "/api/auditorias",
+                "/api/auditorias/**",
+                "/api/pedidos",
+                "/api/pedidos/**"
+            ).denyAll()
 
-        return http.build();
-    }
+            // Página inicial após o login.
+            .requestMatchers(HttpMethod.GET, "/")
+                .authenticated()
+
+            .anyRequest().denyAll()
+        )
+        .formLogin(form -> form
+            .loginPage("/login")
+            .defaultSuccessUrl("/", true)
+            .permitAll()
+        )
+        .logout(logout -> logout
+            .logoutUrl("/logout")
+            .logoutSuccessUrl("/login?logout")
+            .permitAll()
+        );
+
+    return http.build();
+}
 }

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="content">
+
+    <h2 class="mb-4">Auditoria</h2>
+
+    <div id="erroAuditoria"
+         class="alert alert-danger"
+         role="alert"
+         hidden></div>
+
+    <button type="button"
+            id="atualizarAuditoria"
+            class="btn btn-outline-secondary mb-3">
+        Atualizar registros
+    </button>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>Data/hora</th>
+                <th>Usuário</th>
+                <th>Perfil</th>
+                <th>Operação</th>
+                <th>Entidade / ID</th>
+                <th>Campo</th>
+                <th>Valor anterior</th>
+                <th>Novo valor</th>
+                <th>Justificativa</th>
+            </tr>
+            </thead>
+
+            <tbody id="registrosAuditoria"></tbody>
+        </table>
+    </div>
+
+    <script>
+        (() => {
+            const tabela = document.getElementById('registrosAuditoria');
+            const aviso = document.getElementById('erroAuditoria');
+            const botao = document.getElementById('atualizarAuditoria');
+
+            async function carregar() {
+                aviso.hidden = true;
+                botao.disabled = true;
+
+                try {
+                    const registros = await chamarApi('/api/auditorias');
+
+                    registros.sort((a, b) =>
+                        (b.dataHora || '').localeCompare(a.dataHora || '')
+                    );
+
+                    tabela.replaceChildren();
+
+                    if (registros.length === 0) {
+                        const linha = document.createElement('tr');
+                        const celula = document.createElement('td');
+
+                        celula.colSpan = 9;
+                        celula.textContent = 'Nenhum registro de auditoria.';
+                        linha.appendChild(celula);
+                        tabela.appendChild(linha);
+                        return;
+                    }
+
+                    for (const registro of registros) {
+                        const linha = document.createElement('tr');
+
+                        const valores = [
+                            registro.dataHora
+                                ? new Date(registro.dataHora)
+                                    .toLocaleString('pt-BR')
+                                : '—',
+                            registro.usuario,
+                            registro.perfil,
+                            registro.operacao,
+                            `${registro.entidade} / ${registro.entidadeId}`,
+                            registro.campo,
+                            registro.valorAnterior,
+                            registro.valorNovo,
+                            registro.justificativa
+                        ];
+
+                        for (const valor of valores) {
+                            const celula = document.createElement('td');
+                            celula.textContent = valor ?? '—';
+                            linha.appendChild(celula);
+                        }
+
+                        tabela.appendChild(linha);
+                    }
+                } catch (erro) {
+                    aviso.textContent = erro.message;
+                    aviso.hidden = false;
+                } finally {
+                    botao.disabled = false;
+                }
+            }
+
+            botao.addEventListener('click', carregar);
+            carregar();
+        })();
+    </script>
+
+</div>
+</body>
+</html>

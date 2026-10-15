@@ -1,77 +1,481 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <title>Lista de Pedidos</title>
-</head>
 <body>
-
 <div th:fragment="content">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">
-            <i class="bi bi-bag me-2 text-primary"></i>Pedidos
-        </h2>
+    <h2 class="mb-4">Pedidos</h2>
+
+    <div id="erroPedido"
+         class="alert alert-danger"
+         role="alert"
+         hidden></div>
+
+    <!-- Cadastro exclusivo do ATENDENTE -->
+    <section class="card card-body mb-4"
+             th:if="${perfilAtual == 'ATENDENTE'}">
+
+        <h4>Novo pedido</h4>
+
+        <form id="formPedido">
+            <label for="clientePedido" class="form-label">Cliente</label>
+
+            <select id="clientePedido"
+                    class="form-select mb-3"
+                    required></select>
+
+            <div id="itensPedido"></div>
+
+            <button type="button"
+                    id="adicionarItem"
+                    class="btn btn-outline-secondary">
+                Adicionar item
+            </button>
+
+            <button type="submit" class="btn btn-primary">
+                Registrar pedido
+            </button>
+        </form>
+    </section>
+
+    <button type="button"
+            id="atualizarPedidos"
+            class="btn btn-outline-secondary mb-3">
+        Atualizar lista
+    </button>
+
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+                <th>Pedido / cliente</th>
+                <th>Itens</th>
+                <th>Valores</th>
+                <th>Status</th>
+                <th>Entrada / saída</th>
+                <th>Ações</th>
+            </tr>
+            </thead>
+
+            <tbody id="listaPedidos"></tbody>
+        </table>
     </div>
 
-    <!-- Mensagens de feedback -->
-    <div class="alert alert-success alert-dismissible fade show" th:if="${sucesso}" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>
-        <span th:text="${sucesso}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    <div class="alert alert-danger alert-dismissible fade show" th:if="${erro}" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-        <span th:text="${erro}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <script th:inline="javascript">
+        (() => {
+            const perfil = /*[[${perfilAtual}]]*/ '';
+            const tabela = document.getElementById('listaPedidos');
+            const aviso = document.getElementById('erroPedido');
+            const formulario = document.getElementById('formPedido');
 
-    <!-- Tabela -->
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th class="ps-4">ID</th>
-                        <th>Cliente ID</th>
-                        <th>Tipo de Pizza</th>
-                        <th>Sabor</th>
-                        <th>Quantidade</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Lista vazia -->
-                    <tr th:if="${#lists.isEmpty(pedidos)}">
-                        <td colspan="6" class="text-center text-muted py-5">
-                            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
-                            Nenhum pedido encontrado.
-                        </td>
-                    </tr>
-                    <!-- Linhas -->
-                    <tr th:each="pedido : ${pedidos}">
-                        <td class="ps-4 text-muted" th:text="${pedido.id}"></td>
-                        <td th:text="${pedido.clienteId}"></td>
-                        <td th:text="${pedido.tipoPizza}"></td>
-                        <td th:text="${pedido.sabor}"></td>
-                        <td th:text="${pedido.quantidade}"></td>
-                        <td>
-                            <span class="badge"
-                                  th:classappend="${pedido.status == 'ENTREGUE'} ? 'bg-success' :
-                                                  (${pedido.status == 'CANCELADO'} ? 'bg-danger' :
-                                                  (${pedido.status == 'EM_PREPARO'} ? 'bg-warning text-dark' : 'bg-secondary'))"
-                                  th:text="${pedido.status}">
-                            </span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer text-muted small" th:if="${!#lists.isEmpty(pedidos)}">
-            Total: <strong th:text="${#lists.size(pedidos)}"></strong> pedido(s)
-        </div>
-    </div>
+            let produtos = [];
+
+            const nomesStatus = {
+                RECEBIDO: 'Recebido',
+                EM_PREPARACAO: 'Em preparação',
+                PRONTO: 'Pronto',
+                SAIU_PARA_ENTREGA: 'Saiu para entrega',
+                RETIRADO: 'Retirado',
+                FINALIZADO: 'Finalizado',
+                CANCELADO: 'Cancelado'
+            };
+
+            const transicoes = {
+                RECEBIDO: ['EM_PREPARACAO'],
+                EM_PREPARACAO: ['PRONTO'],
+                PRONTO: ['SAIU_PARA_ENTREGA', 'RETIRADO'],
+                SAIU_PARA_ENTREGA: ['FINALIZADO'],
+                RETIRADO: ['FINALIZADO']
+            };
+
+            function mostrarErro(erro) {
+                aviso.textContent = erro.message;
+                aviso.hidden = false;
+            }
+
+            function criarElemento(tag, texto, classe) {
+                const elemento = document.createElement(tag);
+
+                if (texto !== undefined) {
+                    elemento.textContent = texto;
+                }
+
+                if (classe) {
+                    elemento.className = classe;
+                }
+
+                return elemento;
+            }
+
+            function moeda(valor) {
+                return Number(valor || 0).toLocaleString('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                });
+            }
+
+            function data(valor) {
+                return valor
+                    ? new Date(valor).toLocaleString('pt-BR')
+                    : '—';
+            }
+
+            function criarBotao(texto, acao, classe = 'btn-outline-primary') {
+                const botao = criarElemento(
+                    'button',
+                    texto,
+                    `btn btn-sm ${classe} m-1`
+                );
+
+                botao.type = 'button';
+
+                botao.addEventListener('click', async () => {
+                    aviso.hidden = true;
+                    botao.disabled = true;
+
+                    try {
+                        await acao();
+                    } catch (erro) {
+                        mostrarErro(erro);
+                    } finally {
+                        botao.disabled = false;
+                    }
+                });
+
+                return botao;
+            }
+
+            function adicionarItem() {
+                const linha = criarElemento(
+                    'div',
+                    undefined,
+                    'd-flex gap-2 mb-2'
+                );
+
+                const produto = criarElemento(
+                    'select',
+                    undefined,
+                    'form-select'
+                );
+
+                produto.required = true;
+                produto.setAttribute('aria-label', 'Produto');
+
+                produto.appendChild(
+                    new Option('Selecione um produto', '')
+                );
+
+                produtos.forEach(item => {
+                    produto.appendChild(new Option(
+                        `${item.nome} — ${moeda(item.preco)}`,
+                        item.id
+                    ));
+                });
+
+                const quantidade = criarElemento(
+                    'input',
+                    undefined,
+                    'form-control'
+                );
+
+                quantidade.type = 'number';
+                quantidade.min = '1';
+                quantidade.step = '1';
+                quantidade.value = '1';
+                quantidade.required = true;
+                quantidade.style.maxWidth = '110px';
+                quantidade.setAttribute('aria-label', 'Quantidade');
+
+                const remover = criarBotao(
+                    'Remover',
+                    async () => linha.remove(),
+                    'btn-outline-danger'
+                );
+
+                linha.append(produto, quantidade, remover);
+
+                document.getElementById('itensPedido')
+                    .appendChild(linha);
+            }
+
+            async function carregarPedidos() {
+                const pedidos = await chamarApi('/api/pedidos');
+                tabela.replaceChildren();
+
+                if (pedidos.length === 0) {
+                    const linha = criarElemento('tr');
+                    const celula = criarElemento(
+                        'td',
+                        'Nenhum pedido cadastrado.'
+                    );
+
+                    celula.colSpan = 6;
+                    linha.appendChild(celula);
+                    tabela.appendChild(linha);
+                    return;
+                }
+
+                for (const pedido of pedidos) {
+                    const linha = criarElemento('tr');
+
+                    const identificacao = criarElemento('td');
+                    identificacao.append(
+                        criarElemento('div', pedido.id),
+                        criarElemento(
+                            'small',
+                            `Cliente: ${pedido.clienteId}`
+                        )
+                    );
+
+                    const itens = criarElemento('td');
+
+                    for (const item of pedido.itens || []) {
+                        itens.appendChild(criarElemento(
+                            'div',
+                            `${item.quantidade} × ${item.nomeProduto}`
+                            + ` — ${moeda(item.subtotal)}`
+                        ));
+                    }
+
+                    const valores = criarElemento('td');
+                    valores.append(
+                        criarElemento(
+                            'div',
+                            `Subtotal: ${moeda(pedido.subtotal)}`
+                        ),
+                        criarElemento(
+                            'div',
+                            `Desconto: ${pedido.percentualDesconto || 0}%`
+                            + ` (${moeda(pedido.valorDesconto)})`
+                        ),
+                        criarElemento(
+                            'strong',
+                            `Total: ${moeda(pedido.valorTotal)}`
+                        )
+                    );
+
+                    const horarios = criarElemento('td');
+                    horarios.append(
+                        criarElemento(
+                            'div',
+                            `Entrada: ${data(pedido.dataHoraEntrada)}`
+                            + ` — ${pedido.responsavelEntrada || '—'}`
+                        ),
+                        criarElemento(
+                            'div',
+                            `Saída: ${data(pedido.dataHoraSaida)}`
+                            + ` — ${pedido.responsavelSaida || '—'}`
+                        )
+                    );
+
+                    const acoes = criarElemento('td');
+                    const id = encodeURIComponent(pedido.id);
+
+                    if (['GERENTE', 'ATENDENTE'].includes(perfil)) {
+                        for (const proximo of transicoes[pedido.status] || []) {
+                            acoes.appendChild(criarBotao(
+                                nomesStatus[proximo],
+                                async () => {
+                                    await chamarApi(
+                                        `/api/pedidos/${id}/status?status=${proximo}`,
+                                        'PUT'
+                                    );
+
+                                    await carregarPedidos();
+                                }
+                            ));
+                        }
+                    }
+
+                    const antesDaSaida = [
+                        'RECEBIDO',
+                        'EM_PREPARACAO',
+                        'PRONTO'
+                    ].includes(pedido.status);
+
+                    if (perfil === 'GERENTE' && antesDaSaida) {
+                        acoes.appendChild(criarBotao(
+                            'Desconto',
+                            async () => {
+                                const entrada = prompt(
+                                    'Informe o desconto percentual de 0 a 20:'
+                                );
+
+                                if (entrada === null) return;
+
+                                if (!entrada.trim()) {
+                                    throw new Error('Informe o percentual.');
+                                }
+
+                                const percentual = Number(
+                                    entrada.trim().replace(',', '.')
+                                );
+
+                                if (!Number.isFinite(percentual)
+                                        || percentual < 0
+                                        || percentual > 20) {
+                                    throw new Error(
+                                        'O desconto deve ser de 0% a 20%.'
+                                    );
+                                }
+
+                                await chamarApi(
+                                    `/api/pedidos/${id}/desconto`,
+                                    'PUT',
+                                    {percentual}
+                                );
+
+                                await carregarPedidos();
+                            }
+                        ));
+
+                        acoes.appendChild(criarBotao(
+                            'Cancelar',
+                            async () => {
+                                const justificativa = prompt(
+                                    'Informe a justificativa do cancelamento:'
+                                );
+
+                                if (justificativa === null) return;
+
+                                if (!justificativa.trim()) {
+                                    throw new Error(
+                                        'A justificativa é obrigatória.'
+                                    );
+                                }
+
+                                await chamarApi(
+                                    `/api/pedidos/${id}/cancelar`,
+                                    'PUT',
+                                    {
+                                        justificativa: justificativa.trim()
+                                    }
+                                );
+
+                                await carregarPedidos();
+                            },
+                            'btn-outline-danger'
+                        ));
+                    }
+
+                    if (pedido.justificativaCancelamento) {
+                        acoes.appendChild(criarElemento(
+                            'div',
+                            `Motivo: ${pedido.justificativaCancelamento}`
+                        ));
+                    }
+
+                    linha.append(
+                        identificacao,
+                        itens,
+                        valores,
+                        criarElemento(
+                            'td',
+                            nomesStatus[pedido.status] || pedido.status
+                        ),
+                        horarios,
+                        acoes
+                    );
+
+                    tabela.appendChild(linha);
+                }
+            }
+
+            async function iniciar() {
+                document.getElementById('atualizarPedidos')
+                    .addEventListener('click', async () => {
+                        aviso.hidden = true;
+
+                        try {
+                            await carregarPedidos();
+                        } catch (erro) {
+                            mostrarErro(erro);
+                        }
+                    });
+
+                await carregarPedidos();
+
+                if (!formulario) return;
+
+                const [clientes, listaProdutos] = await Promise.all([
+                    chamarApi('/api/clientes'),
+                    chamarApi('/api/produtos')
+                ]);
+
+                produtos = listaProdutos.filter(
+                    produto => produto.ativo === true
+                );
+
+                const cliente = document.getElementById('clientePedido');
+                cliente.appendChild(
+                    new Option('Selecione um cliente', '')
+                );
+
+                clientes.forEach(item => {
+                    cliente.appendChild(
+                        new Option(item.nome, item.id)
+                    );
+                });
+
+                document.getElementById('adicionarItem')
+                    .addEventListener('click', adicionarItem);
+
+                adicionarItem();
+
+                formulario.addEventListener('submit', async event => {
+                    event.preventDefault();
+                    aviso.hidden = true;
+
+                    const botao = formulario.querySelector('[type="submit"]');
+                    botao.disabled = true;
+
+                    try {
+                        const itens = Array.from(
+                            document.getElementById('itensPedido').children
+                        ).map(linha => ({
+                            produtoId: linha.querySelector('select').value,
+                            quantidade: Number(
+                                linha.querySelector('input').value
+                            )
+                        }));
+
+                        if (!itens.length) {
+                            throw new Error(
+                                'Adicione pelo menos um item.'
+                            );
+                        }
+
+                        if (itens.some(item =>
+                            !item.produtoId
+                            || !Number.isSafeInteger(item.quantidade)
+                            || item.quantidade <= 0
+                        )) {
+                            throw new Error(
+                                'Selecione os produtos e informe quantidades inteiras positivas.'
+                            );
+                        }
+
+                        await chamarApi('/api/pedidos', 'POST', {
+                            clienteId: cliente.value,
+                            itens
+                        });
+
+                        document.getElementById('itensPedido')
+                            .replaceChildren();
+
+                        adicionarItem();
+                        await carregarPedidos();
+                    } catch (erro) {
+                        mostrarErro(erro);
+                    } finally {
+                        botao.disabled = false;
+                    }
+                });
+            }
+
+            iniciar().catch(mostrarErro);
+        })();
+    </script>
 
 </div>
-
 </body>
 </html>
