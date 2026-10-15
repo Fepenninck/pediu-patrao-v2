@@ -49,11 +49,12 @@
                     </label>
                     <div class="input-group">
                         <input type="password"
-                               id="password"
-                               class="form-control"
-                               th:field="*{password}"
-                               placeholder="••••••••"
-                               th:required="${usuario.id == null}"/>
+       id="password"
+       name="password"
+       class="form-control"
+       autocomplete="new-password"
+       placeholder="Digite uma nova senha"
+       th:required="${usuario.id == null}">
                         <button type="button" class="btn btn-outline-secondary" id="togglePassword">
                             <i class="bi bi-eye" id="eyeIcon"></i>
                         </button>

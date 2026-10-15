@@ -32,28 +32,45 @@ public class UsuarioService {
     }
 
     public Usuario criarUsuario(Usuario usuario) {
-        if (usuario.getUsername() == null || usuario.getUsername().isBlank()) {
-            throw new IllegalArgumentException("O nome de usuário é obrigatório.");
-        }
-
-        if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
-            throw new IllegalArgumentException("A senha é obrigatória.");
-        }
-
-        if (usuario.getRole() == null) {
-            throw new IllegalArgumentException("O perfil de acesso é obrigatório.");
-        }
-
-        if (usuarioRepository.findByUsername(usuario.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Já existe um usuário com esse nome.");
-        }
-
-        usuario.setUsername(usuario.getUsername().trim());
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-
-        return usuarioRepository.save(usuario);
+    if (usuario == null) {
+        throw new IllegalArgumentException(
+                "Os dados do usuário são obrigatórios."
+        );
     }
 
+    if (usuario.getUsername() == null || usuario.getUsername().isBlank()) {
+        throw new IllegalArgumentException(
+                "O nome de usuário é obrigatório."
+        );
+    }
+
+    if (usuario.getPassword() == null || usuario.getPassword().isBlank()) {
+        throw new IllegalArgumentException(
+                "A senha é obrigatória."
+        );
+    }
+
+    if (usuario.getRole() == null) {
+        throw new IllegalArgumentException(
+                "O perfil de acesso é obrigatório."
+        );
+    }
+
+    String username = usuario.getUsername().trim();
+
+    if (usuarioRepository.findByUsername(username).isPresent()) {
+        throw new IllegalArgumentException(
+                "Já existe um usuário com esse nome."
+        );
+    }
+
+    // Um cadastro novo não pode sobrescrever um usuário existente.
+    usuario.setId(null);
+    usuario.setUsername(username);
+    usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+
+    return usuarioRepository.save(usuario);
+}
     public Usuario atualizarUsuario(String id, Usuario usuarioAtualizado) {
         Usuario usuarioExistente = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));

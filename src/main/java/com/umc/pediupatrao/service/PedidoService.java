@@ -293,6 +293,9 @@ public Pedido cancelarPedido(String id, String justificativa) {
             .getName();
 
     StatusPedido statusAnterior = pedido.getStatus();
+    String justificativaAnterior = pedido.getJustificativaCancelamento();
+    String responsavelAnterior = pedido.getResponsavelCancelamento();
+    LocalDateTime dataHoraAnterior = pedido.getDataHoraCancelamento();
 
     pedido.setStatus(StatusPedido.CANCELADO);
     pedido.setJustificativaCancelamento(justificativa.trim());
@@ -308,6 +311,36 @@ public Pedido cancelarPedido(String id, String justificativa) {
             "status",
             statusAnterior.name(),
             StatusPedido.CANCELADO.name(),
+            justificativa.trim()
+    );
+
+    auditoriaService.registrar(
+            "CANCELAMENTO",
+            "PEDIDO",
+            pedidoCancelado.getId(),
+            "justificativaCancelamento",
+            justificativaAnterior,
+            pedidoCancelado.getJustificativaCancelamento(),
+            justificativa.trim()
+    );
+
+    auditoriaService.registrar(
+            "CANCELAMENTO",
+            "PEDIDO",
+            pedidoCancelado.getId(),
+            "responsavelCancelamento",
+            responsavelAnterior,
+            pedidoCancelado.getResponsavelCancelamento(),
+            justificativa.trim()
+    );
+
+    auditoriaService.registrar(
+            "CANCELAMENTO",
+            "PEDIDO",
+            pedidoCancelado.getId(),
+            "dataHoraCancelamento",
+            dataHoraAnterior == null ? null : dataHoraAnterior.toString(),
+            pedidoCancelado.getDataHoraCancelamento().toString(),
             justificativa.trim()
     );
 
