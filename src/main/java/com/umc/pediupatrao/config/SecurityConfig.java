@@ -146,6 +146,13 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             .requestMatchers(HttpMethod.GET, "/")
                 .authenticated()
 
+            // Consulta do dashboard: ADMIN e GERENTE.
+            .requestMatchers(
+                HttpMethod.GET,
+                "/api/dashboard",
+                "/api/dashboard/**"
+            ).hasAnyRole("ADMIN", "GERENTE")
+
             .anyRequest().denyAll()
         )
         .formLogin(form -> form
