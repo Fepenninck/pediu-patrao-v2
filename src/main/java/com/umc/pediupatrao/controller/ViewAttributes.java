@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 @ControllerAdvice
 public class ViewAttributes {
 
+    @ModelAttribute("usernameAtual")
+    public String usernameAtual(Authentication authentication) {
+        return authentication == null ? "" : authentication.getName();
+    }
+
     @ModelAttribute("perfilAtual")
     public String perfilAtual(Authentication authentication) {
         if (authentication == null) {

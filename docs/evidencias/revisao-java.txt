@@ -1,0 +1,7 @@
+﻿com.umc.pediupatrao.controller.DashboardControllerTest: tests=7, failures=0, errors=0, skipped=0
+com.umc.pediupatrao.controller.PermissoesControllerTest: tests=10, failures=0, errors=0, skipped=0
+com.umc.pediupatrao.service.AuditoriaServiceTest: tests=1, failures=0, errors=0, skipped=0
+com.umc.pediupatrao.service.ClienteServiceTest: tests=3, failures=0, errors=0, skipped=0
+com.umc.pediupatrao.service.DashboardServiceTest: tests=7, failures=0, errors=0, skipped=0
+com.umc.pediupatrao.service.PedidoServiceTest: tests=7, failures=0, errors=0, skipped=0
+com.umc.pediupatrao.service.UsuarioServiceTest: tests=11, failures=0, errors=0, skipped=0

@@ -1,3 +1,7 @@
+> **Dashboard Administrativo:** consulte [execução, requisitos, API, testes e apresentação](docs/dashboard/README.md). Acesse `/dashboard` com perfil ADMIN ou GERENTE.
+
+> **Revisão do sistema:** [correções de usuários, auditoria, permissões e testes automatizados](docs/revisao-seguranca.md).
+
 <div align="center">
   <img src="./assets/banner.png" alt="Banner Pediu Patrão" width="100%">
 
@@ -234,15 +238,15 @@
   </tr>
   <tr>
     <td>Consultar clientes</td>
-    <td>Não</td><td>Sim</td><td>Sim</td>
+    <td>Sim</td><td>Sim</td><td>Sim</td>
   </tr>
   <tr>
     <td>Cadastrar e editar clientes</td>
-    <td>Não</td><td>Não</td><td>Sim</td>
+    <td>Não</td><td>Sim</td><td>Sim</td>
   </tr>
   <tr>
     <td>Registrar pedidos</td>
-    <td>Não</td><td>Não</td><td>Sim</td>
+    <td>Não</td><td>Sim</td><td>Sim</td>
   </tr>
   <tr>
     <td>Consultar pedidos</td>
@@ -250,7 +254,7 @@
   </tr>
   <tr>
     <td>Avançar status</td>
-    <td>Não</td><td>Sim</td><td>Não</td>
+    <td>Não</td><td>Sim</td><td>Sim</td>
   </tr>
   <tr>
     <td>Aplicar descontos</td>

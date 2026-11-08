@@ -75,28 +75,28 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
                 "/api/auditorias/**"
             ).hasAnyRole("ADMIN", "GERENTE")
 
-            // Consulta de clientes: GERENTE e ATENDENTE.
+            // Consulta de clientes: os três perfis.
             .requestMatchers(
                 HttpMethod.GET,
                 "/clientes",
                 "/api/clientes",
                 "/api/clientes/**"
-            ).hasAnyRole("GERENTE", "ATENDENTE")
+            ).hasAnyRole("ADMIN", "GERENTE", "ATENDENTE")
 
-            // Cadastro, edição e exclusão de clientes: ATENDENTE.
+            // Cadastro, edição e exclusão de clientes: GERENTE e ATENDENTE.
             .requestMatchers(
                 "/clientes/novo",
                 "/clientes/salvar",
                 "/clientes/editar/**",
                 "/api/clientes",
                 "/api/clientes/**"
-            ).hasRole("ATENDENTE")
+            ).hasAnyRole("GERENTE", "ATENDENTE")
 
-            // Registro de pedidos: ATENDENTE.
+            // Registro de pedidos: GERENTE e ATENDENTE.
             .requestMatchers(
                 HttpMethod.POST,
                 "/api/pedidos"
-            ).hasRole("ATENDENTE")
+            ).hasAnyRole("GERENTE", "ATENDENTE")
 
             // Desconto e cancelamento: exclusivamente GERENTE.
             .requestMatchers(
@@ -106,11 +106,10 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             ).hasRole("GERENTE")
 
             // Avanço do pedido: GERENTE e ATENDENTE.
-            // Gerenciamento do fluxo do pedido: somente GERENTE.
-.requestMatchers(
-    HttpMethod.PUT,
-    "/api/pedidos/*/status"
-).hasRole("GERENTE")
+            .requestMatchers(
+                HttpMethod.PUT,
+                "/api/pedidos/*/status"
+            ).hasAnyRole("GERENTE", "ATENDENTE")
 
             // Consulta de pedidos: os três perfis.
             .requestMatchers(
@@ -145,6 +144,14 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             // Página inicial após o login.
             .requestMatchers(HttpMethod.GET, "/")
                 .authenticated()
+
+            // Consulta do dashboard: ADMIN e GERENTE.
+            .requestMatchers(
+                HttpMethod.GET,
+                "/dashboard",
+                "/api/dashboard",
+                "/api/dashboard/**"
+            ).hasAnyRole("ADMIN", "GERENTE")
 
             .anyRequest().denyAll()
         )

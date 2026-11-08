@@ -10,9 +10,9 @@
          role="alert"
          hidden></div>
 
-    <!-- Cadastro exclusivo do ATENDENTE -->
+    <!-- Cadastro por GERENTE e ATENDENTE -->
     <section class="card card-body mb-4"
-             th:if="${perfilAtual == 'ATENDENTE'}">
+             th:if="${perfilAtual == 'ATENDENTE' or perfilAtual == 'GERENTE'}">
 
         <h4>Novo pedido</h4>
 
@@ -270,7 +270,7 @@
                     const acoes = criarElemento('td');
                     const id = encodeURIComponent(pedido.id);
 
-                    if (perfil === 'GERENTE') {
+                    if (perfil === 'GERENTE' || perfil === 'ATENDENTE') {
                         for (const proximo of transicoes[pedido.status] || []) {
                             acoes.appendChild(criarBotao(
                                 nomesStatus[proximo],
