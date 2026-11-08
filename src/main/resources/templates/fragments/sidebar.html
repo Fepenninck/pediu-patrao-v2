@@ -25,7 +25,7 @@
                         </a>
                     </li>
                     <li class="nav-item"
-                        th:if="${perfilAtual == 'GERENTE' or perfilAtual == 'ATENDENTE'}">
+                        th:if="${perfilAtual == 'ADMIN' or perfilAtual == 'GERENTE' or perfilAtual == 'ATENDENTE'}">
                         <a class="nav-link" th:href="@{/clientes}">
                             <i class="bi bi-person-raised-hand"></i><span class="d-none d-md-inline">&nbsp;Clientes</span>
                         </a>
