@@ -32,7 +32,9 @@ PedidoRepository          → consulta a coleção pedidos por data de entrada
 dashboard.js              → busca os dados, atualiza gráficos e trata os estados da tela
 ```
 
-A implementação está na branch de funcionalidade `dashboard`, criada a partir de `develop`. A integração prevista no Gitflow é `dashboard → develop`; uma versão estável pode ser integrada à `main` pelo fluxo de release.
+A implementação está na branch de funcionalidade `dashboard`, criada a partir de `develop`. A versão 1.1.0 segue a integração `dashboard → develop → release/1.1.0 → main`, com retorno da release para `develop` e tag `v1.1.0`. A branch `dashboard` foi preservada.
+
+O histórico contém uma integração direta anterior de `dashboard` em `main`. A organização da release foi feita depois, sem apagar ou reescrever esses commits.
 
 ## Limites conhecidos
 
