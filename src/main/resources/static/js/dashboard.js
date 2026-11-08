@@ -105,6 +105,7 @@
             return;
         }
         botao.disabled = true;
+        [inicio, fim, byId('periodo-rapido')].forEach(input => { input.disabled = true; });
         root.setAttribute('aria-busy', 'true');
         mensagem.textContent = 'Consultando dados…';
         const controller = new AbortController();
@@ -128,6 +129,7 @@
         } finally {
             clearTimeout(timeout);
             botao.disabled = false;
+            [inicio, fim, byId('periodo-rapido')].forEach(input => { input.disabled = false; });
             root.setAttribute('aria-busy', 'false');
         }
     }
