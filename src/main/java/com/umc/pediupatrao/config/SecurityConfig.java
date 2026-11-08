@@ -13,6 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.csrf.CsrfException;
 
 @Configuration
 @EnableWebSecurity
@@ -155,6 +157,19 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 
             .anyRequest().denyAll()
         )
+        .exceptionHandling(errors -> errors.accessDeniedHandler((request, response, exception) -> {
+            if (request.getRequestURI().startsWith(request.getContextPath() + "/api/")) {
+                response.setStatus(403);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                String mensagem = exception instanceof CsrfException
+                        ? "Sua página está com um token de segurança inválido ou expirado. Recarregue a página e entre novamente."
+                        : "Seu perfil não tem permissão para executar esta ação.";
+                response.getWriter().write("{\"erro\":\"" + mensagem + "\"}");
+            } else {
+                new AccessDeniedHandlerImpl().handle(request, response, exception);
+            }
+        }))
         .formLogin(form -> form
             .loginPage("/login")
             .defaultSuccessUrl("/", true)

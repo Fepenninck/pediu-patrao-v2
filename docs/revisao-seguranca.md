@@ -1,5 +1,9 @@
 # Segurança, permissões e testes
 
+## Validação final — 08/11/2026
+
+A suíte final passou com **48 testes Java e cinco testes JavaScript**, sem falhas. Foram acrescentados dois cenários que verificam o avanço para preparação como GERENTE e ATENDENTE com o token CSRF extraído do HTML renderizado. As respostas de acesso negado da API agora distinguem token inválido de falta de permissão; o cliente apresenta a mensagem retornada pelo servidor. A evidência está em [evidencias/entrega-java.txt](evidencias/entrega-java.txt).
+
 ## Gerenciamento de usuários
 
 As regras ficam no `UsuarioService`, usado tanto pelos formulários quanto pela API:

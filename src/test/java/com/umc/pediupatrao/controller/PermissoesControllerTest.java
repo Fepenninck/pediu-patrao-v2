@@ -74,8 +74,25 @@ class PermissoesControllerTest {
 
     @Test void escritaContinuaExigindoCsrf() throws Exception {
         mvc.perform(delete("/api/clientes/c1").with(user("gerente").roles("GERENTE")))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.erro").value(containsString("token de segurança")));
         verifyNoInteractions(clientes);
+    }
+
+    @ParameterizedTest @ValueSource(strings = {"GERENTE", "ATENDENTE"})
+    void avancaPreparacaoComTokenRealRenderizadoNaPagina(String perfil) throws Exception {
+        when(pedidos.listarPedidos()).thenReturn(List.of());
+        var pagina = mvc.perform(get("/pedidos").with(user("operador").roles(perfil)))
+                .andExpect(status().isOk()).andReturn();
+        String html = pagina.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+        var token = java.util.regex.Pattern.compile("name=\"_csrf\" content=\"([^\"]+)\"").matcher(html);
+        org.junit.jupiter.api.Assertions.assertTrue(token.find(), "Token CSRF deve estar no HTML");
+        var session = (org.springframework.mock.web.MockHttpSession) pagina.getRequest().getSession(false);
+        mvc.perform(put("/api/pedidos/p1/status?status=EM_PREPARACAO")
+                .session(session).with(user("operador").roles(perfil))
+                .header("X-CSRF-TOKEN", token.group(1)))
+                .andExpect(status().isOk());
+        verify(pedidos).atualizarStatus("p1", com.umc.pediupatrao.entity.StatusPedido.EM_PREPARACAO);
     }
 
     @Test void conflitoDeUsuarioRetorna409NaApiEFeedbackNoFormulario() throws Exception {
