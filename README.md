@@ -1,3 +1,5 @@
+> **Dashboard Administrativo:** consulte [execução, requisitos, API, testes e apresentação](docs/dashboard/README.md). Acesse `/dashboard` com perfil ADMIN ou GERENTE.
+
 <div align="center">
   <img src="./assets/banner.png" alt="Banner Pediu Patrão" width="100%">
 
