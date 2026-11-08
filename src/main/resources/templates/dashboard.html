@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="pt-BR">
+<body>
+<section th:fragment="content" id="dashboard" th:attr="data-api=@{/api/dashboard}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <header class="dash-header">
+        <div><p class="dash-eyebrow">PEDIU PATRÃO · GESTÃO</p><h1>Visão da operação</h1>
+            <p class="text-muted">Acompanhe as vendas e o movimento do estabelecimento.</p></div>
+        <span id="ultima-atualizacao" class="text-muted" aria-live="polite">Aguardando consulta</span>
+    </header>
+    <form id="filtros-dashboard" class="dash-filtros">
+        <div><label for="data-inicial">Data inicial</label><input class="form-control" id="data-inicial" type="date" required></div>
+        <div><label for="data-final">Data final</label><input class="form-control" id="data-final" type="date" required></div>
+        <div><label for="periodo-rapido">Período rápido</label><select id="periodo-rapido" class="form-select">
+            <option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="1">Hoje</option><option value="custom">Personalizado</option>
+        </select></div>
+        <button class="btn btn-dark" type="submit" id="atualizar-dashboard"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Atualizar</button>
+    </form>
+    <p class="small text-muted">Período pela data de entrada. Faturamento e ranking consideram somente pedidos finalizados, com descontos já aplicados ao faturamento.</p>
+    <p id="dashboard-mensagem" role="status" aria-live="polite"></p>
+    <div id="dashboard-resultados" hidden>
+        <div class="dash-indicadores">
+            <article class="dash-card"><span>Faturamento</span><strong id="indicador-faturamento"></strong><small>Vendas finalizadas</small></article>
+            <article class="dash-card"><span>Pedidos finalizados</span><strong id="indicador-finalizados"></strong><small>No período selecionado</small></article>
+            <article class="dash-card"><span>Ticket médio</span><strong id="indicador-ticket"></strong><small>Por pedido finalizado</small></article>
+            <article class="dash-card"><span>Cancelamentos</span><strong id="indicador-cancelados"></strong><small>Fora do faturamento</small></article>
+        </div>
+        <div class="dash-graficos">
+            <article class="dash-painel"><h2>Evolução das vendas</h2><p class="text-muted small">Faturamento diário em reais</p><div class="dash-canvas"><canvas id="grafico-vendas" role="img" aria-label="Gráfico de faturamento por dia"></canvas></div>
+                <details><summary>Ver dados do gráfico</summary><div class="dash-tabela-scroll"><table class="table table-sm"><caption class="visually-hidden">Faturamento por dia</caption><thead><tr><th>Data</th><th>Faturamento</th></tr></thead><tbody id="vendas-tabela"></tbody></table></div></details>
+            </article>
+            <article class="dash-painel"><h2>Situação dos pedidos</h2><div class="dash-canvas"><canvas id="grafico-status" role="img" aria-label="Gráfico de quantidade de pedidos por status"></canvas></div><ul id="status-lista" class="dash-status"></ul></article>
+        </div>
+        <article class="dash-painel mt-3"><h2>Produtos mais vendidos</h2><p class="text-muted small">Os cinco primeiros por quantidade em pedidos finalizados.</p><div class="table-responsive"><table class="table align-middle"><thead><tr><th scope="col">Posição</th><th scope="col">Produto</th><th scope="col">Unidades</th></tr></thead><tbody id="ranking-produtos"></tbody></table></div></article>
+    </div>
+    <script th:src="@{/plugins/chart.js/Chart.min.js}"></script>
+    <script th:src="@{/js/dashboard.js}"></script>
+</section>
+</body>
+</html>
