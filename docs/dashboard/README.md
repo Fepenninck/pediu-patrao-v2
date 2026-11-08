@@ -19,6 +19,7 @@ Os últimos sete dias são selecionados inicialmente. Também existem atalhos pa
 - [Endpoints e exemplos](api.md)
 - [Testes, evidências e verificações manuais](testes.md)
 - [Roteiro do vídeo de até três minutos](apresentacao.md)
+- [Vídeo de apresentação](../video/VideoDashboard.mp4)
 
 ## Organização do código
 
@@ -40,4 +41,4 @@ A implementação está na branch de funcionalidade `dashboard`, criada a partir
 - Os cálculos ocorrem em memória após filtrar no MongoDB. Para volumes maiores, avaliar índice em `dataHoraEntrada` e agregações no banco.
 - As quatro consultas não são um snapshot transacional. Um pedido alterado durante a atualização pode aparecer de forma diferente entre recursos; uma nova atualização refaz as consultas.
 - O Chart.js é servido localmente. Bootstrap e ícones continuam usando os CDNs do layout existente.
-- O vídeo final precisa ser gravado com a aplicação em funcionamento; o roteiro está pronto. Não há vídeo gravado incluído nesta entrega de código.
+- O vídeo de apresentação está incluído em `docs/video/VideoDashboard.mp4`.

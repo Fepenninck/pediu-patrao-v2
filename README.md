@@ -2,6 +2,8 @@
 
 > **Revisão do sistema:** [correções de usuários, auditoria, permissões e testes automatizados](docs/revisao-seguranca.md).
 
+> **Vídeo de apresentação:** [VideoDashboard.mp4](docs/video/VideoDashboard.mp4).
+
 <div align="center">
   <img src="./assets/banner.png" alt="Banner Pediu Patrão" width="100%">
 
