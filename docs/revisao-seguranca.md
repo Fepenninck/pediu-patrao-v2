@@ -1,4 +1,4 @@
-# Revisão a partir do feedback da avaliação
+# Segurança, permissões e testes
 
 ## Gerenciamento de usuários
 
@@ -23,7 +23,7 @@ Como nas outras operações auditadas deste projeto, exclusão e gravação do r
 
 ## Permissões revisadas
 
-O feedback não especificou quais permissões eram restritivas. A revisão libera o atendimento operacional para GERENTE e ATENDENTE, preservando separação das operações financeiras.
+As operações de atendimento são compartilhadas por GERENTE e ATENDENTE, preservando a separação das operações financeiras.
 
 | Operação | ADMIN | GERENTE | ATENDENTE |
 | --- | --- | --- | --- |

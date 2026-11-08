@@ -54,15 +54,15 @@ O resumo exportado dos relatórios Surefire está em [evidencias/java.txt](evide
 
 Os testes Node executam o script em um DOM simplificado e simulam `fetch` e Chart.js. Verificam o comportamento da integração, sem reproduzir o layout real de um navegador.
 
-## Evidência manual anterior
+## Exemplo de resposta sem movimento
 
-Durante o desenvolvimento, o usuário consultou o endpoint autenticado e relatou este retorno:
+Quando não há pedidos finalizados ou cancelados no período, o resumo retorna:
 
 ```json
 {"faturamento":0.00,"pedidosFinalizados":0,"ticketMedio":0.00,"pedidosCancelados":0}
 ```
 
-Isso confirma uma resposta real do resumo, mas não comprova os cálculos com pedidos não zerados. Os cálculos com valores conhecidos foram verificados pelos testes automatizados.
+Os cálculos com valores conhecidos são verificados pelos testes automatizados. A homologação com dados reais segue o roteiro abaixo.
 
 ## Roteiro de homologação com MongoDB real
 
