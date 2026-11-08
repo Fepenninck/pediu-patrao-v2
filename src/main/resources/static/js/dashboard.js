@@ -97,9 +97,9 @@
     async function atualizar(event) {
         event?.preventDefault();
         if (botao.disabled || !form.reportValidity()) return;
-        resultados.hidden = true;
-        mensagem.className = 'alert alert-info';
+        mensagem.className = 'small text-muted';
         if (inicio.value > fim.value) {
+            resultados.hidden = true;
             mensagem.className = 'alert alert-danger';
             mensagem.textContent = 'A data inicial não pode ser posterior à data final.';
             return;

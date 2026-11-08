@@ -1,4 +1,5 @@
 #dashboard { max-width: 1440px; margin: 0 auto; padding: 12px 12px 40px; }
+#dashboard-mensagem { min-height: 24px; margin: 16px 0; }
 .dash-header { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
 .dash-header h1 { font-size:clamp(1.6rem,3vw,2.3rem); font-weight:700; }
 .dash-eyebrow { font-size:.72rem; letter-spacing:.12em; color:#9b4820; font-weight:700; }
