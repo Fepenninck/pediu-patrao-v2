@@ -23,6 +23,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class HomeController {
 
+    @GetMapping("/dashboard")
+    public String dashboard(Model model) {
+        model.addAttribute("content", "dashboard :: content");
+        return "layout";
+    }
+
     @GetMapping("/auditorias")
 public String auditorias(Model model) {
     model.addAttribute("content", "auditorias :: content");

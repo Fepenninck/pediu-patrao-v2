@@ -29,7 +29,13 @@ public class ClienteService {
     }
 
     public void excluir(String id) {
-        clienteRepository.deleteById(id);
+        Cliente cliente = clienteRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado para exclusão."));
+        clienteRepository.delete(cliente);
+        auditoriaService.registrar(
+                "EXCLUSAO", "CLIENTE", cliente.getId(), "cliente",
+                "Cliente excluído: " + cliente.getNome(), null, null
+        );
     }
 
     public Optional<Cliente> buscarPorId(String id) {

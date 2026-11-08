@@ -1,0 +1,13 @@
+﻿✔ carrega os quatro recursos e exibe produto como texto (38.3898ms)
+✔ período vazio apresenta mensagem e ranking vazio (2.0608ms)
+✔ sessão expirada oculta resultados e permite tentar novamente (2.8786ms)
+✔ falha da API exibe mensagem sem resultados antigos (1.6332ms)
+✔ datas invertidas não enviam nova consulta (1.6797ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 123.6141

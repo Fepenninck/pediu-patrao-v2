@@ -13,6 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandlerImpl;
+import org.springframework.security.web.csrf.CsrfException;
 
 @Configuration
 @EnableWebSecurity
@@ -75,28 +77,28 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
                 "/api/auditorias/**"
             ).hasAnyRole("ADMIN", "GERENTE")
 
-            // Consulta de clientes: GERENTE e ATENDENTE.
+            // Consulta de clientes: os três perfis.
             .requestMatchers(
                 HttpMethod.GET,
                 "/clientes",
                 "/api/clientes",
                 "/api/clientes/**"
-            ).hasAnyRole("GERENTE", "ATENDENTE")
+            ).hasAnyRole("ADMIN", "GERENTE", "ATENDENTE")
 
-            // Cadastro, edição e exclusão de clientes: ATENDENTE.
+            // Cadastro, edição e exclusão de clientes: GERENTE e ATENDENTE.
             .requestMatchers(
                 "/clientes/novo",
                 "/clientes/salvar",
                 "/clientes/editar/**",
                 "/api/clientes",
                 "/api/clientes/**"
-            ).hasRole("ATENDENTE")
+            ).hasAnyRole("GERENTE", "ATENDENTE")
 
-            // Registro de pedidos: ATENDENTE.
+            // Registro de pedidos: GERENTE e ATENDENTE.
             .requestMatchers(
                 HttpMethod.POST,
                 "/api/pedidos"
-            ).hasRole("ATENDENTE")
+            ).hasAnyRole("GERENTE", "ATENDENTE")
 
             // Desconto e cancelamento: exclusivamente GERENTE.
             .requestMatchers(
@@ -106,11 +108,10 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             ).hasRole("GERENTE")
 
             // Avanço do pedido: GERENTE e ATENDENTE.
-            // Gerenciamento do fluxo do pedido: somente GERENTE.
-.requestMatchers(
-    HttpMethod.PUT,
-    "/api/pedidos/*/status"
-).hasRole("GERENTE")
+            .requestMatchers(
+                HttpMethod.PUT,
+                "/api/pedidos/*/status"
+            ).hasAnyRole("GERENTE", "ATENDENTE")
 
             // Consulta de pedidos: os três perfis.
             .requestMatchers(
@@ -146,8 +147,29 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             .requestMatchers(HttpMethod.GET, "/")
                 .authenticated()
 
+            // Consulta do dashboard: ADMIN e GERENTE.
+            .requestMatchers(
+                HttpMethod.GET,
+                "/dashboard",
+                "/api/dashboard",
+                "/api/dashboard/**"
+            ).hasAnyRole("ADMIN", "GERENTE")
+
             .anyRequest().denyAll()
         )
+        .exceptionHandling(errors -> errors.accessDeniedHandler((request, response, exception) -> {
+            if (request.getRequestURI().startsWith(request.getContextPath() + "/api/")) {
+                response.setStatus(403);
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                String mensagem = exception instanceof CsrfException
+                        ? "Sua página está com um token de segurança inválido ou expirado. Recarregue a página e entre novamente."
+                        : "Seu perfil não tem permissão para executar esta ação.";
+                response.getWriter().write("{\"erro\":\"" + mensagem + "\"}");
+            } else {
+                new AccessDeniedHandlerImpl().handle(request, response, exception);
+            }
+        }))
         .formLogin(form -> form
             .loginPage("/login")
             .defaultSuccessUrl("/", true)

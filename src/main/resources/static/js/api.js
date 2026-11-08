@@ -41,9 +41,9 @@ window.chamarApi = async function (url, metodo = 'GET', dados) {
         : null;
 
     if (!resposta.ok) {
-        const mensagem = resposta.status === 403
+        const mensagem = conteudo?.erro || (resposta.status === 403
             ? 'Acesso negado ou token de segurança inválido.'
-            : conteudo?.erro || `Erro HTTP ${resposta.status}.`;
+            : `Erro HTTP ${resposta.status}.`);
 
         throw new Error(mensagem);
     }
